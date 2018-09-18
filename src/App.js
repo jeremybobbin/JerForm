@@ -7,7 +7,11 @@ class App extends Component {
       <Fragment>
         <h1>JerForm</h1>
         <JerForm
-          inputs={['phone', 'email', 'password', 'remember', 'submit']}
+          buttonText='Submit'
+          inputs={['phone', 'email', 'password', 'remember']}
+          onSubmit={(args) => {
+            console.log(args);
+          }}
         />
       </Fragment>
     );

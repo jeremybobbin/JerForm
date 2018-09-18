@@ -1,14 +1,17 @@
 import React, {Component, Fragment} from 'react';
 
 const baseDefault = {
+
     labelText: null,
     id: '',
     className: null,
     errorClassName: null,
     placeholder: null,
     type: 'text',
+
     changeHandler: (stateRef, e) => 
         stateRef.value = e.target.value,
+
     predicates: [{
         func: v => v.length > 0,
         errorMsg: 'This field is required.',
@@ -19,12 +22,27 @@ const defaults = {
     username: {
         type: 'text'
     },
+
     password: {
-        type: 'password'
+        type: 'password',
+        predicates: [{
+            func: v => v.length > 0,
+            errorMsg: 'Password is required.'
+        }],
     },
+
     email: {
-        type: 'email'
+        type: 'email',
+        predicates: [{
+            func: v => v.length > 0,
+            errorMsg: 'Email address is required.'
+        },
+        {
+            func: v => /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v),
+            errorMsg: 'That email is not valid.'
+        }],
     },
+    
     phone: {
         type: 'tel',
         predicates: [{
@@ -34,16 +52,20 @@ const defaults = {
         {
             func: v => /^[(]{0,1}[0-9]{3}[)]{0,1}[-\s\.]{0,1}[0-9]{3}[-\s\.]{0,1}[0-9]{4}$/.test(v),
             errorMsg: 'Phone number is invalid.'
-        }]
+        }],
 
     },
+
     remember: {
         type: 'checkbox',
         labelText: 'Keep me logged in',
+        predicates: [{
+            func: v => true,
+            errorMsg: 'This message will never display.'
+        }],
+        changeHandler: (stateRef, e) =>
+            stateRef.value = e.target.checked
 
-    },
-    submit: {
-        type: 'submit'
     }
 };
 
@@ -91,7 +113,7 @@ export default class Input extends Component {
 
     getKeyValue() {
         return {
-            key: this.state.name,
+            key: this.name,
             value: this.state.value,
         };
     }
@@ -118,16 +140,15 @@ export default class Input extends Component {
             || '';
     }
 
-    validate() {
+    validate(otherInputs = null) {
         this.set(state => state.error = '')
             .then(() => {
                 const pred = this.predicates.find(
-                    ({func}) => !func(this.state.value)
+                    ({func}) => !func(this.state.value, otherInputs)
                 );
         
                 if(pred) {
                     this.set(state => state.error = pred.errorMsg);
-                    throw pred.errorMsg;
                 }
         
                 return true;

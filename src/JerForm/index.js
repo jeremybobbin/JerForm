@@ -11,7 +11,7 @@ export default class JerForm extends Component {
         this.className = props.className;
         this.inputs = props.inputs;
 
-        this.onSubmit = props.onSubmit;
+        this.submitHandlerProp = props.onSubmit;
         
         this.inputRefs = [];
         
@@ -27,8 +27,6 @@ export default class JerForm extends Component {
             this.inputs[i].ref = ref;
             that.inputRefs.push(ref);
         });
-        console.log('Input Refs: ');
-        console.log(this.inputRefs);
 
     }
 
@@ -42,11 +40,10 @@ export default class JerForm extends Component {
     getInputValues() {
         const pairs = {};
 
-        this.inputRefs.forEach(input => {
-            const pair = input.getKeyValue();
+        this.inputRefs.forEach(({current}) => {
+            const pair = current.getKeyValue();
             pairs[pair.key] = pair.value;
         });
-
         return pairs;
     }
 
@@ -54,24 +51,38 @@ export default class JerForm extends Component {
         e.preventDefault();
 
         if(this.validateInputs()) {
-            this.onSubmit(...this.getInputValues());
+            this.submitHandlerProp(this.getInputValues());
         }
     }
 
     render() {
-        
-        const inputs = this.inputs.map((input, i) => 
+        const {buttonText, inputs, className} = this;
+        const inputArray = inputs.map((input, i) => 
             <Input
                 key={i}
-                parentClass={this.className}
+                parentClass={className}
                 {...input}
             />
         );
 
+        if(buttonText) {
+            inputArray.push(
+                <input
+                    key={100}
+                    type='submit'
+                    value={buttonText}
+                    className={className ?
+                        `${className}-submit`
+                        :
+                        `form-submit`
+                    }/>
+            );
+        }
+
         return (
             <form
                 onSubmit={(e) => this.submitHandler(e)}>
-                {inputs}
+                {inputArray}
             </form>
         );
     }
